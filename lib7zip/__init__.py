@@ -55,9 +55,14 @@ if 'win' in sys.platform:
 	log.info('autodetecting dll path from registry')
 	from winreg import OpenKey, QueryValueEx, HKEY_LOCAL_MACHINE, KEY_READ
 
-	aKey = OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\7-Zip", 0 , KEY_READ)
-	s7z_path = QueryValueEx(aKey, "Path")[0]
-	dll_paths.append(os.path.join(s7z_path, '7z.dll'))
+	try:
+		aKey = OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\7-Zip", 0, KEY_READ)
+	except FileNotFoundError:
+		aKey = None
+
+	if aKey is not None:
+		s7z_path = QueryValueEx(aKey, "Path")[0]
+		dll_paths.append(os.path.join(s7z_path, '7z.dll'))
 
 	ole32 = ffi.dlopen('ole32')
 	free_propvariant = lambda x: ole32.PropVariantClear(x)
